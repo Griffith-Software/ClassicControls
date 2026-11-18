@@ -13,6 +13,8 @@
 // YouTube's buttons, and those buttons are hidden on the page.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { spawn } from 'node:child_process';
+import { chromium } from 'playwright';
 import path from 'node:path';
 import { launch, tabStates, passConsent } from '../lib/launch.mjs';
 import { ROOT } from '../../scripts/files.mjs';
@@ -36,6 +38,10 @@ const QUERIES = ['space news', 'guitar lesson', 'bread recipe'];
 const rules = JSON.parse(await readFile(path.join(ROOT, 'data', 'fixes.json'), 'utf8'));
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'manifest.json'), 'utf8'));
 await mkdir(OUT, { recursive: true });
+
+// Ads look like video cards and carry a watch link, but the extension leaves them alone on
+// purpose, so the card checks skip them (same list as the extension's notCard rule).
+const NOT_AD = `:not(:has(${rules.fixes.hoverButtons.anchors.notCard.join(', ')}))`;
 
 const checks = [];
 const anchors = {};
@@ -94,6 +100,39 @@ async function fixState(worker, fixId) {
   return tabs[0] && tabs[0].fixes ? tabs[0].fixes[fixId] : undefined;
 }
 
+// Moves the pointer onto a card's thumbnail the way a person would. Playwright's own hover()
+// waits for nothing to cover the card, but on the home page YouTube's inline preview pops up on
+// top of the card being hovered, so it would wait forever.
+async function pointAt(page, card) {
+  await card.scrollIntoViewIfNeeded();
+  const link = card.locator('a[href*="/watch?v="]').first();
+  const box = (await link.boundingBox()) || (await card.boundingBox());
+  if (!box) throw new Error('the card has no size on the page');
+  await page.mouse.move(box.x + box.width * 0.3, box.y + Math.min(box.height * 0.5, 80), { steps: 3 });
+}
+
+// Clicks one of the extension's buttons for this card: the copy on YouTube's playing preview if
+// that is on top, otherwise the card's own.
+async function clickAction(page, card, action) {
+  const target = await card.evaluate((el, act) => {
+    const ids = Array.from(el.querySelectorAll('a[href*="/watch?v="]')).map((a) => new URL(a.href).searchParams.get('v'));
+    const boxes = [el.querySelector('.cc-hover:not(.cc-in-preview)'),
+      Array.from(document.querySelectorAll('.cc-in-preview')).find((b) => ids.includes(b.dataset.ccFor))];
+    for (const box of boxes) {
+      const b = box && box.querySelector(`.cc-btn[data-cc-action="${act}"]`);
+      if (!b) continue;
+      const r = b.getBoundingClientRect();
+      const top = r.width && document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      if (top && top.closest('.cc-btn') === b) return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+    return null;
+  }, action);
+  if (!target) return false;
+  await page.mouse.move(target.x, target.y, { steps: 2 });
+  await page.mouse.click(target.x, target.y);
+  return true;
+}
+
 // Hovers the first few cards and checks the two buttons appear on each.
 async function checkHover(page, cardSel, where) {
   const cards = page.locator(cardSel);
@@ -106,8 +145,7 @@ async function checkHover(page, cardSel, where) {
     let shown = null;
     for (let attempt = 0; attempt < 2 && (!shown || shown.best !== 2); attempt++) {
       await page.mouse.move(0, 0);
-      await card.scrollIntoViewIfNeeded();
-      await card.hover();
+      await pointAt(page, card);
       shown = await card.evaluate(async (el) => {
         const visible = (box) => box ? Array.from(box.querySelectorAll('.cc-btn')).filter((b) => {
           const r = b.getBoundingClientRect();
@@ -240,7 +278,7 @@ async function signedInRun(context, worker) {
     return;
   }
   await recordAnchors(page, 'home');
-  const homeCards = 'ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(a[href*="/watch?v="])';
+  const homeCards = 'ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(a[href*="/watch?v="])' + NOT_AD;
   const homeHover = await checkHover(page, homeCards, 'the home page');
   record('hoverButtons', 'buttons on the home page', homeHover.ok, homeHover.detail, homeHover.ok ? {} : await evidence(page, homeCards));
 
@@ -248,16 +286,18 @@ async function signedInRun(context, worker) {
     const card = page.locator(homeCards).first();
     const href = await card.locator('a[href*="/watch?v="]').first().getAttribute('href');
     const videoId = new URL(href, 'https://www.youtube.com').searchParams.get('v');
-    await card.hover();
-    await page.waitForTimeout(400);
-    await card.locator('.cc-btn[data-cc-action="watchLater"]').click();
+    await page.mouse.move(0, 0);
+    await pointAt(page, card);
+    await page.waitForTimeout(600);
+    const clicked = await clickAction(page, card, 'watchLater');
+    if (!clicked) console.log('     (the Watch Later button was not on top; checking the list anyway)');
     await page.waitForTimeout(2500);
     await open(page, 'https://www.youtube.com/playlist?list=WL');
     const item = page.locator(`ytd-playlist-video-renderer:has(a[href*="v=${videoId}"])`).first();
     const saved = (await item.count()) > 0;
     record('hoverButtons', 'Watch Later really adds the video', saved, saved ? `video ${videoId} is in Watch Later` : `video ${videoId} was not found in Watch Later`, saved ? {} : await evidence(page, 'ytd-playlist-video-list-renderer'));
     if (saved) {
-      await item.hover();
+      await item.hover({ force: true });
       await item.locator('button[aria-label="Action menu"], button[aria-label="More actions"]').first().click();
       const remove = page.locator('ytd-popup-container [role="menuitem"]:has-text("Remove from Watch later")').first();
       await remove.click({ timeout: 5000 }).catch(() => {});
@@ -271,7 +311,7 @@ async function signedInRun(context, worker) {
     record('subsList', 'subscriptions feed', null, 'the feed showed no videos (follow a few channels with the test account)');
   } else {
     await recordAnchors(page, 'subscriptions');
-    const subCards = 'ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(a[href*="/watch?v="])';
+    const subCards = 'ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:has(a[href*="/watch?v="])' + NOT_AD;
     const subHover = await checkHover(page, subCards, 'the subscriptions feed');
     record('hoverButtons', 'buttons on the subscriptions feed', subHover.ok, subHover.detail, subHover.ok ? {} : await evidence(page, subCards));
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -290,21 +330,26 @@ async function signedInRun(context, worker) {
   await page.close();
 }
 
+if (args.includes('--setup')) {
+  // Opens the test profile in the same Chromium the test uses, but started on its own with no
+  // automation attached: Google refuses sign-ins in a browser driven by test software. The
+  // owner signs in to the test account by hand and closes the window; later runs reuse the
+  // sign-in saved in the profile.
+  if (!PROFILE) throw new Error('--setup needs --profile <folder>');
+  const exe = chromium.executablePath();
+  console.log('Sign in to the test Google account in the window that opens, then close it.');
+  const child = spawn(exe, [`--user-data-dir=${PROFILE}`, '--no-first-run', '--no-default-browser-check',
+    'https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fwww.youtube.com%2F'], { stdio: 'ignore' });
+  await new Promise((resolve) => child.on('exit', resolve));
+  process.exit(0);
+}
+
 const { context, worker } = await launch({
   userDataDir: PROFILE || undefined,
-  headed: args.includes('--headed') || args.includes('--setup'),
+  headed: args.includes('--headed'),
   patchRules: (r) => { r.fixes.hoverButtons.anchors.nativeButtons = ['cc-never-matches']; }
 });
 const chromeVersion = context.browser() ? context.browser().version() : await worker.evaluate(() => navigator.userAgent.match(/Chrome\/([\d.]+)/)?.[1] || 'unknown');
-
-if (args.includes('--setup')) {
-  // Opens the test profile so the owner can sign in to the test account once by hand.
-  const page = await context.newPage();
-  await page.goto('https://www.youtube.com/');
-  console.log('Sign in to the test Google account in the window, then close it.');
-  await new Promise((resolve) => context.on('close', resolve));
-  process.exit(0);
-}
 
 try {
   if (SIGNED_IN) await signedInRun(context, worker);

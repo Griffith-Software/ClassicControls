@@ -8,7 +8,7 @@ Checked against live YouTube (English, signed out) in the app's browser pane and
 - The three-dot button (`aria-label="Action menu"`) fills in when the card is hovered. Its menu (`ytd-menu-popup-renderer`, items `role="menuitem"`) lists "Add to queue" and "Save to Watch later". Clicking "Add to queue" from script opened the miniplayer queue, the same as doing it by hand.
 - Home, subscriptions and channel grids use the newer `ytd-rich-item-renderer > yt-lockup-view-model` card. Its three-dot button is `aria-label="More actions"`, and its menu is a `yt-sheet-view-model` with `yt-list-item-view-model` rows (`role="menuitem"`), with the same item wording.
 - Channel video pages still show YouTube's own hover buttons (`yt-thumbnail-hover-overlay-toggle-actions-view-model`: 32 px round, dark see-through background, top right, stacked). The extension leaves any card that already has them alone.
-- The signed-out home page shows no videos, so home and subscriptions can only be checked signed in (the daily signed-in run).
+- The signed-out home page shows no videos, so home and subscriptions can only be checked signed in (the twice-weekly signed-in run).
 
 ## Newest First: Partly Possible on YouTube's Side
 

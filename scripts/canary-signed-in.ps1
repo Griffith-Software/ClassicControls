@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: LicenseRef-Apache-2.0-with-Commons-Clause
 # Copyright (c) 2026 Griffith Software — https://griffith.software
 #
-# Signed-in YouTube test, run daily on the owner's PC with a separate test Google account.
+# Signed-in YouTube test, run twice a week on the owner's PC with a separate test Google account.
 # It checks the home page and subscriptions feed hover buttons, that Watch Later really adds
 # a video (and removes it again), and the subscriptions list view, then updates the
 # youtube-change issues on GitHub with the GitHub CLI (gh).
 #
 # First time only, sign the test profile in to the test account by hand:
 #   powershell -File scripts\canary-signed-in.ps1 -Setup
-# Then run it daily (Task Scheduler or a scheduled task):
-#   powershell -File scripts\canary-signed-in.ps1
+# Then schedule it twice a week at random times:
+#   powershell -File scripts\register-signed-in-task.ps1
 #
 # The test account's password is never stored anywhere by this script; Chrome keeps the
 # sign-in in the profile folder, which lives outside the repo.

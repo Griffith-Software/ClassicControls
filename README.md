@@ -81,15 +81,15 @@ To try it in Chrome, open `chrome://extensions`, turn on Developer mode, choose 
 
 **Signed out, every 6 hours, on GitHub Actions** (`.github/workflows/canary.yml`): searches a fixed list of queries, checks the hover buttons on result thumbnails and on the inline preview, adds a video to the queue, and turns on Newest First to check the results are in upload-time order.
 
-**Signed in, daily, on the owner's PC** (`scripts/canary-signed-in.ps1`): home page and Subscriptions feed hover buttons, that Watch Later really adds the video (then removes it again), and the Subscriptions list view in time order. It uses a separate test Google account in its own browser profile, outside the repo. Its sign-in is never stored in the repo, in CI or in any file the scripts write.
+**Signed in, twice a week at random times, on the owner's PC** (`scripts/canary-signed-in.ps1`): home page and Subscriptions feed hover buttons, that Watch Later really adds the video (then removes it again), and the Subscriptions list view in time order. It uses a separate test Google account in its own browser profile, outside the repo. Its sign-in is never stored in the repo, in CI or in any file the scripts write.
 
 ```powershell
 powershell -File scripts\canary-signed-in.ps1 -Setup   # once: sign the test profile in by hand
 powershell -File scripts\canary-signed-in.ps1          # one run by hand
-powershell -File scripts\register-signed-in-task.ps1   # run it daily with Windows Task Scheduler
+powershell -File scripts\register-signed-in-task.ps1   # run it twice a week with Windows Task Scheduler
 ```
 
-`register-signed-in-task.ps1` takes `-At 14:30` to pick the time and `-Remove` to stop the daily run.
+`register-signed-in-task.ps1` picks a new random time each week, once between Monday 08:00 and Wednesday 20:00 and once between Thursday 08:00 and Sunday 08:00. `-Remove` stops it.
 
 TODO(owner): create the test Google account, then run the setup line and the scheduler line above.
 
