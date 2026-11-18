@@ -1,0 +1,90 @@
+{
+  "publisher": "Griffith Software",
+  "schemaVersion": 1,
+  "rulesUpdated": "2026-11-17",
+  "settleMs": 3000,
+  "pages": {
+    "home": "^/$",
+    "subscriptions": "^/feed/subscriptions/?$",
+    "search": "^/results/?$"
+  },
+  "videoLinks": "ytd-page-manager a[href*=\"/watch?v=\"], ytd-page-manager a[href^=\"/shorts/\"]",
+  "fixes": {
+    "hoverButtons": {
+      "name": "Watch Later and Add to Queue Buttons",
+      "subject": "The Watch Later and Add to Queue buttons",
+      "pages": ["home", "subscriptions", "search"],
+      "anchors": {
+        "card": ["yt-lockup-view-model", "ytd-rich-item-renderer", "ytd-video-renderer", "ytd-grid-video-renderer"],
+        "notCard": ["ytd-ad-slot-renderer", "ytd-in-feed-ad-layout-renderer", "ytd-search-pyv-renderer", "ytd-promoted-video-renderer", "ytd-display-ad-renderer"],
+        "videoLink": ["a[href*=\"/watch?v=\"]", "a[href^=\"/shorts/\"]"],
+        "thumbnail": ["ytd-thumbnail", "yt-thumbnail-view-model", "a[class*=\"ContentImage\"]", "a#thumbnail"],
+        "menuButton": [
+          "button[aria-label=\"More actions\"]",
+          "button[aria-label=\"Action menu\"]",
+          "ytd-menu-renderer yt-icon-button#button button",
+          "[class*=\"MenuButton\"] button"
+        ],
+        "nativeButtons": [
+          "yt-thumbnail-hover-overlay-toggle-actions-view-model",
+          "ytd-thumbnail-overlay-toggle-button-renderer",
+          "button[aria-label=\"Watch later\"]:not(.cc-btn)",
+          "button[aria-label=\"Add to queue\"]:not(.cc-btn)"
+        ],
+        "preview": ["ytd-video-preview"],
+        "previewLink": ["a[class*=\"MediaContainerLink\"]", "a#media-container-link", "a[href*=\"/watch?v=\"]"],
+        "menuPopup": ["ytd-popup-container tp-yt-iron-dropdown", "ytd-popup-container yt-sheet-view-model"],
+        "menuItem": ["[role=\"menuitem\"]"]
+      },
+      "menuText": {
+        "watchLater": ["save to watch later"],
+        "watchLaterDone": ["remove from watch later"],
+        "queue": ["add to queue"]
+      }
+    },
+    "newestFirst": {
+      "name": "Newest First in Search",
+      "subject": "The Newest First control",
+      "pages": ["search"],
+      "anchors": {
+        "results": ["ytd-search ytd-section-list-renderer > #contents"],
+        "section": ["ytd-item-section-renderer"],
+        "sectionContents": ["#contents"],
+        "video": ["ytd-video-renderer", "yt-lockup-view-model", "ytd-rich-item-renderer"],
+        "timeText": [
+          "#metadata-line span",
+          "[class*=\"ContentMetadataViewModelMetadataText\"]",
+          "#metadata span"
+        ],
+        "liveBadge": ["[aria-label=\"LIVE\"]", ".badge-style-type-live-now-alternate", "badge-shape[class*=\"Live\"]"],
+        "shelf": ["ytd-shelf-renderer", "ytd-reel-shelf-renderer", "ytd-horizontal-card-list-renderer", "grid-shelf-view-model", "ytd-universal-watch-card-renderer"],
+        "continuation": ["ytd-continuation-item-renderer"],
+        "toolbarAfter": ["ytd-search-header-renderer", "ytd-search-sub-menu-renderer"]
+      }
+    },
+    "subsList": {
+      "name": "Subscriptions List View",
+      "subject": "The Subscriptions list view",
+      "pages": ["subscriptions"],
+      "anchors": {
+        "grid": ["ytd-browse ytd-rich-grid-renderer"],
+        "gridContents": ["#contents"],
+        "item": ["ytd-rich-item-renderer"],
+        "timeText": [
+          "[class*=\"ContentMetadataViewModelMetadataText\"]",
+          "#metadata-line span",
+          "#metadata span"
+        ],
+        "liveBadge": ["[aria-label=\"LIVE\"]", ".badge-style-type-live-now-alternate", "badge-shape[class*=\"Live\"]"],
+        "shortsSection": [
+          "ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])",
+          "ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model)",
+          "ytd-rich-section-renderer:has([class*=\"ShortsLockup\"])",
+          "ytd-rich-section-renderer:has(a[href^=\"/shorts/\"])"
+        ],
+        "shortsLink": ["a[href^=\"/shorts/\"]"],
+        "continuation": ["ytd-continuation-item-renderer"]
+      }
+    }
+  }
+}

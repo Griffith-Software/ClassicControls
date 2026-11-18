@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Classic Controls icon. Copyright (c) 2026 Griffith Software. -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="#0e7c7b"/>
+  <rect x="24" y="30" width="30" height="18" rx="4" fill="#ffffff"/>
+  <rect x="62" y="34" width="42" height="10" rx="5" fill="#ffffff"/>
+  <rect x="24" y="55" width="30" height="18" rx="4" fill="#ffffff"/>
+  <rect x="62" y="59" width="42" height="10" rx="5" fill="#ffffff"/>
+  <rect x="24" y="80" width="30" height="18" rx="4" fill="#ffffff"/>
+  <rect x="62" y="84" width="30" height="10" rx="5" fill="#ffffff"/>
+</svg>

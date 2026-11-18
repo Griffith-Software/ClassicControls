@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: LicenseRef-Apache-2.0-with-Commons-Clause
+     Copyright (c) 2026 Griffith Software — https://griffith.software -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Classic Controls Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body class="page">
+  <header class="top">
+    <img src="../../icons/icon-48.png" width="32" height="32" alt="">
+    <div>
+      <h1>Classic Controls</h1>
+      <p class="by">by Griffith Software</p>
+    </div>
+  </header>
+
+  <main>
+    <div id="fixes"></div>
+
+    <section class="tools" aria-label="Settings">
+      <h2>Settings</h2>
+      <div class="buttons">
+        <button type="button" id="export">Export Settings</button>
+        <button type="button" id="import">Import Settings</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+      </div>
+      <p id="tools-msg" class="tools-msg" role="status" hidden></p>
+    </section>
+
+    <details class="about" open>
+      <summary>About</summary>
+      <p id="about-line"></p>
+      <p class="small">Classic Controls is an independent project. It is not made by, endorsed by, or affiliated with YouTube or Google, and those names belong to their owners.</p>
+      <p class="small">It makes no network requests of its own and stores only your settings.</p>
+    </details>
+  </main>
+
+  <template id="fix-template">
+    <section class="fix">
+      <div class="row">
+        <label class="switch">
+          <input type="checkbox" class="fix-toggle">
+          <span class="track" aria-hidden="true"></span>
+          <span class="name"></span>
+        </label>
+        <span class="status" hidden><span class="dot" aria-hidden="true"></span><span class="status-text"></span></span>
+      </div>
+      <div class="sub" hidden></div>
+      <div class="notice" hidden></div>
+    </section>
+  </template>
+
+  <script src="../lib/settings.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

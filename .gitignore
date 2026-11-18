@@ -1,0 +1,4 @@
+node_modules/
+canary-results/
+release/
+*.log

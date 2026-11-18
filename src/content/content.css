@@ -1,0 +1,221 @@
+/* SPDX-License-Identifier: LicenseRef-Apache-2.0-with-Commons-Clause
+   Copyright (c) 2026 Griffith Software — https://griffith.software */
+
+/* ---------- Hover buttons ---------- */
+.cc-hover {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+/* Inside YouTube's inline preview: in a row, left of its mute and captions buttons. */
+.cc-hover.cc-in-preview {
+  top: 8px;
+  right: 60px;
+  flex-direction: row;
+  z-index: 50;
+  opacity: 1;
+  pointer-events: auto;
+}
+.cc-in-preview .cc-tip {
+  right: auto;
+  left: 50%;
+  top: 38px;
+  transform: translateX(-50%);
+}
+[data-cc-card]:hover .cc-hover,
+.cc-hover:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cc-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.cc-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+.cc-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+.cc-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+}
+.cc-btn[data-cc-result="fail"] {
+  background: rgba(120, 53, 15, 0.9);
+}
+.cc-tip {
+  position: absolute;
+  right: 38px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: rgba(28, 28, 28, 0.92);
+  color: #fff;
+  font: 500 12px/1.3 Roboto, Arial, sans-serif;
+  display: none;
+  pointer-events: none;
+}
+.cc-btn:hover .cc-tip,
+.cc-btn:focus-visible .cc-tip,
+.cc-btn[data-cc-result] .cc-tip {
+  display: block;
+}
+
+/* YouTube's menu is opened out of sight while a hover button uses it. */
+html[data-cc-menu-hidden] ytd-popup-container tp-yt-iron-dropdown,
+html[data-cc-menu-hidden] ytd-popup-container yt-sheet-view-model,
+html[data-cc-menu-hidden] tp-yt-iron-overlay-backdrop {
+  opacity: 0 !important;
+}
+
+/* ---------- Newest First toolbar ---------- */
+.cc-toolbar {
+  /* Own colours: YouTube's theme variables aren't reliably defined on every page. */
+  --cc-text: #0f0f0f;
+  --cc-text-2: #606060;
+  --cc-chip: rgba(0, 0, 0, 0.05);
+  --cc-chip-hover: rgba(0, 0, 0, 0.1);
+  --cc-chip-on: #0f0f0f;
+  --cc-chip-on-text: #fff;
+  --cc-line: rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+  font: 500 14px/1.4 Roboto, Arial, sans-serif;
+  color: var(--cc-text);
+}
+html[dark] .cc-toolbar {
+  --cc-text: #f1f1f1;
+  --cc-text-2: #aaa;
+  --cc-chip: rgba(255, 255, 255, 0.1);
+  --cc-chip-hover: rgba(255, 255, 255, 0.2);
+  --cc-chip-on: #f1f1f1;
+  --cc-chip-on-text: #0f0f0f;
+  --cc-line: rgba(255, 255, 255, 0.2);
+}
+.cc-chip {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cc-chip);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.cc-chip:hover {
+  background: var(--cc-chip-hover);
+}
+.cc-chip[aria-pressed="true"] {
+  background: var(--cc-chip-on);
+  color: var(--cc-chip-on-text);
+}
+.cc-chip:focus-visible {
+  outline: 2px solid var(--cc-text);
+  outline-offset: 2px;
+}
+.cc-sep {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: var(--cc-line);
+}
+.cc-label {
+  color: var(--cc-text-2);
+  font-weight: 400;
+}
+
+/* Results flattened into one list so they can be ordered by upload time. */
+[data-cc-newest] {
+  display: flex !important;
+  flex-direction: column !important;
+}
+[data-cc-newest] [data-cc-flat] {
+  display: contents !important;
+}
+
+/* ---------- Subscriptions list view ---------- */
+ytd-rich-grid-renderer[data-cc-list] #contents {
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  max-width: 1100px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+ytd-rich-grid-renderer[data-cc-list] [data-cc-flat] {
+  display: contents !important;
+}
+ytd-rich-grid-renderer[data-cc-list] ytd-rich-item-renderer {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 16px 16px !important;
+}
+ytd-rich-grid-renderer[data-cc-list] ytd-rich-section-renderer {
+  width: auto !important;
+  margin-left: 16px !important;
+  margin-right: 16px !important;
+}
+/* Newer cards */
+ytd-rich-grid-renderer[data-cc-list] yt-lockup-view-model > div {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 16px;
+}
+ytd-rich-grid-renderer[data-cc-list] yt-lockup-view-model a[class*="ContentImage"] {
+  flex: 0 0 260px !important;
+  width: 260px !important;
+  max-width: 40% !important;
+}
+ytd-rich-grid-renderer[data-cc-list] yt-lockup-view-model div[class*="LockupViewModelMetadata"] {
+  flex: 1 1 auto !important;
+  min-width: 0;
+  margin-top: 0 !important;
+}
+/* Older cards */
+ytd-rich-grid-renderer[data-cc-list] ytd-rich-grid-media #dismissible {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 16px;
+}
+ytd-rich-grid-renderer[data-cc-list] ytd-rich-grid-media ytd-thumbnail {
+  flex: 0 0 260px !important;
+  width: 260px !important;
+}
+ytd-rich-grid-renderer[data-cc-list] ytd-rich-grid-media #details {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-cc-hide-shorts] {
+  display: none !important;
+}

@@ -1,0 +1,18 @@
+{
+  "name": "classic-controls",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Classic Controls by Griffith Software: restores YouTube desktop controls that YouTube removed.",
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "test": "node --test \"tests/unit/*.test.mjs\"",
+    "icons": "node scripts/make-icons.mjs",
+    "canary": "node tests/canary/run.mjs",
+    "e2e": "node tests/e2e/run.mjs",
+    "package": "node scripts/package.mjs",
+    "store-art": "node scripts/make-store-art.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}

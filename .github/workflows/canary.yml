@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: LicenseRef-Apache-2.0-with-Commons-Clause
+# Copyright (c) 2026 Griffith Software — https://griffith.software
+#
+# Scheduled YouTube test (signed out). Every 6 hours it loads the extension into Chromium,
+# checks each fix on live YouTube, and opens, comments on or closes youtube-change issues.
+name: YouTube Test
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      force_fail:
+        description: "Force one fix to fail, to test the issue automation (hoverButtons, newestFirst or subsList)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: youtube-test
+  cancel-in-progress: false
+
+jobs:
+  youtube-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Test against stand-in pages
+        run: node tests/e2e/run.mjs
+
+      - name: Test against YouTube
+        env:
+          FORCE_FAIL: ${{ inputs.force_fail }}
+        run: node tests/canary/run.mjs --out canary-results --force-fail "$FORCE_FAIL"
+
+      - name: Keep screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-test-${{ github.run_id }}
+          path: canary-results
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Open, update or close issues
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tests/canary/issues.mjs --results canary-results/results.json
